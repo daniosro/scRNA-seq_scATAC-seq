@@ -106,26 +106,26 @@ LNCaP_RESA <- CreateSeuratObject(
 ``` r
 #For LNCaP-derived ENZ-resistant cell lines RES-B
 
-# filepath <- "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/"
-# 
-# peaks <- read.table(paste0(filepath, "peaks.bed"), header = FALSE)
-# peaks$V4 <- paste(peaks$V1, ":", peaks$V2, "-", peaks$V3)
-# barcodes <- read.table(paste0(filepath, "barcodes.tsv"), header = FALSE, stringsAsFactors = FALSE)
-# rownames(barcodes) <- make.unique(barcodes$V1)
-# 
-# mtx_RESB <- readMM(file = paste0(filepath, "matrix.mtx"))
-# mtx_RESB <- as(object = mtx_RESB, Class = "dgCMatrix")
-# colnames(mtx_RESB) <- rownames(barcodes)
-# rownames(mtx_RESB) <- peaks$V4
-# 
-# 
-# chrom_assay_LNCaP_RESB <- CreateChromatinAssay(
-#   counts = mtx_RESB,
-#   sep = c(":", "-"),
-#   fragments = "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/fragments.tsv.gz",
-#   min.cells = 10,
-#   min.features = 200
-# )
+filepath <- "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/"
+
+peaks <- read.table(paste0(filepath, "peaks.bed"), header = FALSE)
+peaks$V4 <- paste(peaks$V1, ":", peaks$V2, "-", peaks$V3)
+barcodes <- read.table(paste0(filepath, "barcodes.tsv"), header = FALSE, stringsAsFactors = FALSE)
+rownames(barcodes) <- make.unique(barcodes$V1)
+
+mtx_RESB <- readMM(file = paste0(filepath, "matrix.mtx"))
+mtx_RESB <- as(object = mtx_RESB, Class = "dgCMatrix")
+colnames(mtx_RESB) <- rownames(barcodes)
+rownames(mtx_RESB) <- peaks$V4
+
+
+chrom_assay_LNCaP_RESB <- CreateChromatinAssay(
+  counts = mtx_RESB,
+  sep = c(":", "-"),
+  fragments = "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/fragments.tsv.gz",
+  min.cells = 10,
+  min.features = 200
+)
 
 LNCaP_RESB <- CreateSeuratObject(
   counts = chrom_assay_LNCaP_RESB,
@@ -270,6 +270,8 @@ relative to the count peaks:
 DensityScatter(LNCaP, x = 'nCount_peaks', y = 'TSS.enrichment', log_x = TRUE, quantiles = TRUE)
 ```
 
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
 Histogram of fragment lengths for cells with low (left) or high (right)
 nucleosomal signal strength:
 
@@ -277,6 +279,8 @@ nucleosomal signal strength:
 LNCaP$nucleosome_group <- ifelse(LNCaP$nucleosome_signal > 4, 'NS > 4', 'NS < 4')
 FragmentHistogram(object = LNCaP, group.by = 'nucleosome_group')
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 VlnPlot(
@@ -286,6 +290,8 @@ VlnPlot(
   ncol = 5
 )
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Based on these QC metrics, we remove outliers:
 
@@ -301,6 +307,11 @@ LNCaP <- subset(
 LNCaP
 ```
 
+    ## An object of class Seurat 
+    ## 113945 features across 3696 samples within 1 assay 
+    ## Active assay: peaks (113945 features, 0 variable features)
+    ##  2 layers present: counts, data
+
 For LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
 
 ``` r
@@ -311,6 +322,8 @@ VlnPlot(
   ncol = 5
 )
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 Based on these QC metrics, we remove outliers:
 
@@ -326,6 +339,11 @@ LNCaP_ENZ48 <- subset(
 LNCaP_ENZ48
 ```
 
+    ## An object of class Seurat 
+    ## 111712 features across 3025 samples within 1 assay 
+    ## Active assay: peaks (111712 features, 0 variable features)
+    ##  2 layers present: counts, data
+
 For LNCaP-derived ENZ-resistant cell lines RES-A:
 
 ``` r
@@ -336,6 +354,8 @@ VlnPlot(
   ncol = 5
 )
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 Based on these QC metrics, we remove outliers:
 
@@ -351,6 +371,11 @@ LNCaP_RESA <- subset(
 LNCaP_RESA
 ```
 
+    ## An object of class Seurat 
+    ## 162011 features across 3932 samples within 1 assay 
+    ## Active assay: peaks (162011 features, 0 variable features)
+    ##  2 layers present: counts, data
+
 For LNCaP-derived ENZ-resistant cell lines RES-B:
 
 ``` r
@@ -361,6 +386,8 @@ VlnPlot(
   ncol = 5
 )
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Based on these QC metrics, we remove outliers:
 
@@ -375,6 +402,11 @@ LNCaP_RESB <- subset(
 )
 LNCaP_RESB
 ```
+
+    ## An object of class Seurat 
+    ## 134409 features across 3366 samples within 1 assay 
+    ## Active assay: peaks (134409 features, 0 variable features)
+    ##  2 layers present: counts, data
 
 ## Normalization and linear dimensional reduction
 
@@ -419,23 +451,29 @@ For the LNCaP cell line:
 DepthCor(LNCaP)
 ```
 
-For LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-25-1.png)<!-- --> For
+LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
 
 ``` r
 DepthCor(LNCaP_ENZ48)
 ```
 
-For LNCaP-derived ENZ-resistant cell lines RES-A:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-26-1.png)<!-- --> For
+LNCaP-derived ENZ-resistant cell lines RES-A:
 
 ``` r
 DepthCor(LNCaP_RESA)
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 For LNCaP-derived ENZ-resistant cell lines RES-B:
 
 ``` r
 DepthCor(LNCaP_RESB)
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 ## Non-linear dimension reduction and clustering
 
@@ -448,7 +486,8 @@ LNCaP <- FindClusters(object = LNCaP, verbose = FALSE, algorithm = 3)
 DimPlot(object = LNCaP, label = TRUE) + NoLegend()
 ```
 
-For LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-29-1.png)<!-- --> For
+LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
 
 ``` r
 LNCaP_ENZ48 <- RunUMAP(object = LNCaP_ENZ48, reduction = 'lsi', dims = 2:30)
@@ -457,7 +496,8 @@ LNCaP_ENZ48 <- FindClusters(object = LNCaP_ENZ48, verbose = FALSE, algorithm = 3
 DimPlot(object = LNCaP_ENZ48, label = TRUE) + NoLegend()
 ```
 
-For LNCaP-derived ENZ-resistant cell lines RES-A:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-30-1.png)<!-- --> For
+LNCaP-derived ENZ-resistant cell lines RES-A:
 
 ``` r
 LNCaP_RESA <- RunUMAP(object = LNCaP_RESA, reduction = 'lsi', dims = 2:30)
@@ -466,13 +506,16 @@ LNCaP_RESA <- FindClusters(object = LNCaP_RESA, verbose = FALSE, algorithm = 3)
 DimPlot(object = LNCaP_RESA, label = TRUE) + NoLegend()
 ```
 
-For LNCaP-derived ENZ-resistant cell lines RES-B:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-31-1.png)<!-- --> For
+LNCaP-derived ENZ-resistant cell lines RES-B:
 
 ``` r
 LNCaP_RESB <- RunUMAP(object = LNCaP_RESB, reduction = 'lsi', dims = 2:30)
 LNCaP_RESB <- FindNeighbors(object = LNCaP_RESB, reduction = 'lsi', dims = 2:30)
 DimPlot(object = LNCaP_RESB, label = TRUE) + NoLegend()
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 ## Create a gene activity matrix
 
@@ -557,6 +600,8 @@ FeaturePlot(
 )
 ```
 
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+
 For LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
 
 ``` r
@@ -570,6 +615,8 @@ FeaturePlot(
   ncol = 3
 )
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
 For LNCaP-derived ENZ-resistant cell lines RES-A:
 
@@ -585,7 +632,8 @@ FeaturePlot(
 )
 ```
 
-For LNCaP-derived ENZ-resistant cell lines RES-B:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-40-1.png)<!-- --> For
+LNCaP-derived ENZ-resistant cell lines RES-B:
 
 ``` r
 DefaultAssay(LNCaP_RESB) <- 'RNA'
@@ -599,7 +647,8 @@ FeaturePlot(
 )
 ```
 
-## Integration with scRNA-seq data
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-41-1.png)<!-- --> \##
+Integration with scRNA-seq data
 
 ``` r
 # Load the pre-processed scRNA-seq data
@@ -682,6 +731,8 @@ plot2 <- DimPlot(
 plot1 + plot2
 ```
 
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+
 ``` r
 #plotting for LNCaP_ENZ48
 plot1 <- DimPlot(
@@ -698,6 +749,8 @@ plot2 <- DimPlot(
 
 plot1 + plot2
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
 
 ``` r
 #plotting for LNCaP_RESA
@@ -716,10 +769,11 @@ plot2 <- DimPlot(
 plot1 + plot2
 ```
 
-It seems like for this particular dataset, despite the cells being
-adecuately classified by the DatabaseImmuneCellExpressionData reference
-dataset from celldex, the labels are not very useful at correlating the
-clusters between scRNA-seq and scATAC-seq.
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-48-1.png)<!-- --> It seems
+like for this particular dataset, despite the cells being adecuately
+classified by the DatabaseImmuneCellExpressionData reference dataset
+from celldex, the labels are not very useful at correlating the clusters
+between scRNA-seq and scATAC-seq.
 
 ## Find differentially accessible peaks between cell types
 
@@ -761,6 +815,14 @@ da_peaks_LNCaP <- FindMarkers(
 head(da_peaks_LNCaP)
 ```
 
+    ##                                  p_val avg_log2FC pct.1 pct.2    p_val_adj
+    ## chr5 -30207229-30207964   4.151256e-17 -14.547766 0.000  0.75 4.730148e-12
+    ## chr20 -34255533-34256178  4.450326e-13  -6.406649 0.011  0.75 5.070924e-08
+    ## chr1 -197380349-197381095 9.253358e-12 -13.759798 0.000  0.50 1.054374e-06
+    ## chr1 -199865618-199866019 9.253358e-12 -14.343960 0.000  0.50 1.054374e-06
+    ## chr1 -239876460-239877069 9.253358e-12 -14.035081 0.000  0.50 1.054374e-06
+    ## chr2 -558641-559274       9.253358e-12 -14.621530 0.000  0.50 1.054374e-06
+
 ``` r
 #LNCaP_ENZ48
 da_peaks_LNCaP_ENZ48 <- FindMarkers(
@@ -796,3 +858,5 @@ plot2 <- FeaturePlot(
 
 plot1 | plot2
 ```
+
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-52-1.png)<!-- -->
