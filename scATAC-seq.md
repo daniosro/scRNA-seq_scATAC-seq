@@ -1,6 +1,3 @@
-scATAC-seq
-================
-2025-04-15
 
 # Analysis of scATAC-seq data from Taavitsainen et al. (2021) for prostate cancer:
 
@@ -109,26 +106,26 @@ LNCaP_RESA <- CreateSeuratObject(
 ``` r
 #For LNCaP-derived ENZ-resistant cell lines RES-B
 
-filepath <- "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/"
-
-peaks <- read.table(paste0(filepath, "peaks.bed"), header = FALSE)
-peaks$V4 <- paste(peaks$V1, ":", peaks$V2, "-", peaks$V3)
-barcodes <- read.table(paste0(filepath, "barcodes.tsv"), header = FALSE, stringsAsFactors = FALSE)
-rownames(barcodes) <- make.unique(barcodes$V1)
-
-mtx_RESB <- readMM(file = paste0(filepath, "matrix.mtx"))
-mtx_RESB <- as(object = mtx_RESB, Class = "dgCMatrix")
-colnames(mtx_RESB) <- rownames(barcodes)
-rownames(mtx_RESB) <- peaks$V4
-
-
-chrom_assay_LNCaP_RESB <- CreateChromatinAssay(
-  counts = mtx_RESB,
-  sep = c(":", "-"),
-  fragments = "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/fragments.tsv.gz",
-  min.cells = 10,
-  min.features = 200
-)
+# filepath <- "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/"
+# 
+# peaks <- read.table(paste0(filepath, "peaks.bed"), header = FALSE)
+# peaks$V4 <- paste(peaks$V1, ":", peaks$V2, "-", peaks$V3)
+# barcodes <- read.table(paste0(filepath, "barcodes.tsv"), header = FALSE, stringsAsFactors = FALSE)
+# rownames(barcodes) <- make.unique(barcodes$V1)
+# 
+# mtx_RESB <- readMM(file = paste0(filepath, "matrix.mtx"))
+# mtx_RESB <- as(object = mtx_RESB, Class = "dgCMatrix")
+# colnames(mtx_RESB) <- rownames(barcodes)
+# rownames(mtx_RESB) <- peaks$V4
+# 
+# 
+# chrom_assay_LNCaP_RESB <- CreateChromatinAssay(
+#   counts = mtx_RESB,
+#   sep = c(":", "-"),
+#   fragments = "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/fragments.tsv.gz",
+#   min.cells = 10,
+#   min.features = 200
+# )
 
 LNCaP_RESB <- CreateSeuratObject(
   counts = chrom_assay_LNCaP_RESB,
@@ -474,7 +471,6 @@ For LNCaP-derived ENZ-resistant cell lines RES-B:
 ``` r
 LNCaP_RESB <- RunUMAP(object = LNCaP_RESB, reduction = 'lsi', dims = 2:30)
 LNCaP_RESB <- FindNeighbors(object = LNCaP_RESB, reduction = 'lsi', dims = 2:30)
-LNCaP_RESB <- FindClusters(object = LNCaP_RESB, verbose = FALSE, algorithm = 3)
 DimPlot(object = LNCaP_RESB, label = TRUE) + NoLegend()
 ```
 
@@ -738,10 +734,6 @@ object.
 # if (!requireNamespace("remotes", quietly = TRUE))
 #   install.packages('remotes')
 # remotes::install_github('immunogenomics/presto')
-```
-
-``` r
-head(LNCaP)
 ```
 
 ``` r
