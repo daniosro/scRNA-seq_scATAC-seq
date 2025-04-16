@@ -241,7 +241,7 @@ LNCaP_RESB <- NucleosomeSignal(object = LNCaP_RESB)
 # compute TSS enrichment score per cell
 LNCaP_RESB <- TSSEnrichment(object = LNCaP_RESB)
 
-# add fraction of reads in peaks
+# Add fraction of reads in peaks
 #Generating a peak/cell or bin/cell matrix
 total_fragments <- CountFragments('/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scATAC_RESB/fragments.tsv.gz')
 rownames(total_fragments) <- total_fragments$CB
@@ -486,8 +486,9 @@ LNCaP <- FindClusters(object = LNCaP, verbose = FALSE, algorithm = 3)
 DimPlot(object = LNCaP, label = TRUE) + NoLegend()
 ```
 
-![](scATAC-seq_files/figure-gfm/unnamed-chunk-29-1.png)<!-- --> For
-LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+
+For LNCaP cells exposed to short-term (48 h) ENZ (10 μM) treatment:
 
 ``` r
 LNCaP_ENZ48 <- RunUMAP(object = LNCaP_ENZ48, reduction = 'lsi', dims = 2:30)
@@ -769,11 +770,12 @@ plot2 <- DimPlot(
 plot1 + plot2
 ```
 
-![](scATAC-seq_files/figure-gfm/unnamed-chunk-48-1.png)<!-- --> It seems
-like for this particular dataset, despite the cells being adecuately
-classified by the DatabaseImmuneCellExpressionData reference dataset
-from celldex, the labels are not very useful at correlating the clusters
-between scRNA-seq and scATAC-seq.
+![](scATAC-seq_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+
+It seems like for this particular dataset, despite the cells being
+adecuately classified by the DatabaseImmuneCellExpressionData reference
+dataset from celldex, the labels are not very useful at correlating the
+clusters between scRNA-seq and scATAC-seq.
 
 ## Find differentially accessible peaks between cell types
 
