@@ -1,5 +1,3 @@
-scRNA-seq
-================
 
 # Analysis of scRNA-seq data from Taavitsainen et al. (2021) for prostate cancer:
 
@@ -14,6 +12,8 @@ Installing the required packages:
 # BiocManager::install("edgeR")
 # BiocManager::install("scDblFinder")
 # BiocManager::install("celldex")
+# BiocManager::install("SingleR")
+# BiocManager::install("scRNAseq")
 # install.packages("mgcv")
 
 # setRepositories(ind = 1:3, addURLs = c('https://satijalab.r-universe.dev', 'https://bnprks.r-universe.dev/'))
@@ -44,6 +44,8 @@ library(sctransform)
 library(readxl)
 library(data.table)
 library(mgcv)
+library(SingleR)
+library(scRNAseq)
 ```
 
 Load the scRNA-seq data:
@@ -613,7 +615,71 @@ For LNCaP_RESA:
 DimPlot(LNCaP_RESA.seu, label=TRUE, repel = T)
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-34-1.png)<!-- --> \##
+Annotating cells with SingleR
+
+``` r
+#Converting Seurat objects to single-cell experiment objects for getting cell annotations with SingleR
+LNCaP.sce <- as.SingleCellExperiment(LNCaP.seu)
+LNCaP_ENZ48.sce <- as.SingleCellExperiment(LNCaP_ENZ48.seu)
+LNCaP_RESA.sce <- as.SingleCellExperiment(LNCaP_RESA.seu)
+# #We will annotate cells with the reference dataset from celldex
+diced.se <- celldex::DatabaseImmuneCellExpressionData()
+#Perform the annotation
+pred_LNCaP <- SingleR(test = LNCaP.sce, ref = diced.se,
+    labels = diced.se$label.main, assay.type.test=1)
+pred_LNCaP_ENZ48 <- SingleR(test = LNCaP_ENZ48.sce, ref = diced.se,
+    labels = diced.se$label.main, assay.type.test=1)
+ pred_LNCaP_RESA <- SingleR(test = LNCaP_RESA.sce, ref = diced.se,
+     labels = diced.se$label.main, assay.type.test=1)
+
+colnames(pred_LNCaP)
+```
+
+    ## [1] "scores"        "labels"        "delta.next"    "pruned.labels"
+
+``` r
+# Summarizing the distribution:
+table(pred_LNCaP$labels)
+```
+
+    ## 
+    ##       B cells     Monocytes      NK cells T cells, CD4+ T cells, CD8+ 
+    ##           228           384            27            99          1619
+
+### Annotation diagnostics
+
+``` r
+#We will generate a heatmap to determine the scores for all cells across the reference labels 
+plotScoreHeatmap(pred_LNCaP)
+```
+
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+
+``` r
+#We will generate a heatmap to determine the scores for all cells across the reference labels 
+plotScoreHeatmap(pred_LNCaP_ENZ48)
+```
+
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+
+``` r
+#We will generate a heatmap to determine the scores for all cells across the reference labels 
+plotScoreHeatmap(pred_LNCaP_RESA)
+```
+
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+
+``` r
+#Add labels from singleR results to the Seurat object
+LNCaP.seu[["SingleR.labels"]] <- pred_LNCaP$labels
+LNCaP_ENZ48.seu[["SingleR.labels"]] <- pred_LNCaP_ENZ48$labels
+LNCaP_RESA.seu[["SingleR.labels"]] <- pred_LNCaP_RESA$labels
+#Save the files
+saveRDS(LNCaP.seu, "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scRNAseq_LNCaP.seu.rds")
+saveRDS(LNCaP_ENZ48.seu, "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scRNAseq_LNCaP_ENZ48.seu.rds")
+saveRDS(LNCaP_RESA.seu, "/scratch1/dosorior/sc_RNA-seq/scRNA-ATAC-seq/scRNAseq_LNCaP_RESA.seu.rds")
+```
 
 ## Finding differentially expressed features
 
@@ -634,7 +700,7 @@ LNCaP_markers %>%
 DoHeatmap(LNCaP.seu, features = top10$gene) + NoLegend()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
 
 ``` r
 # Get top 20 DE markers
@@ -654,7 +720,7 @@ DotPlot(LNCaP.seu, features = LNCaP.marker, group.by = 'seurat_clusters',
         cols = c("blue", "red"), dot.scale = 8) + RotatedAxis()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
 
 We will now visualize the expression levels of individual markers across
 clusters:
@@ -663,7 +729,7 @@ clusters:
 VlnPlot(LNCaP.seu, features = c("KIF18A", "HIST1H1B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
 
 Lastly, we wil get UMAP plots for individual features:
 
@@ -672,7 +738,7 @@ FeaturePlot(LNCaP.seu, features = c("NAALADL2-AS2","PLK1", "KIF18A", "KIF20A",
                 "AURKA", "CDC20","FAM83D","PIF1","FAM95B1","HIST1H1B","C1QTNF2", "AC114803.1", "TMEM74B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
 
 ### For LNCaP_ENZ48
 
@@ -691,7 +757,7 @@ LNCaP_ENZ48_markers %>%
 DoHeatmap(LNCaP_ENZ48.seu, features = top10$gene) + NoLegend()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
 
 ``` r
 # Get top 20 DE markers
@@ -711,7 +777,7 @@ DotPlot(LNCaP_ENZ48.seu, features = LNCaP_ENZ48.marker, group.by = 'seurat_clust
         cols = c("blue", "red"), dot.scale = 8) + RotatedAxis()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
 
 We will now visualize the expression levels of individual markers across
 clusters:
@@ -720,7 +786,7 @@ clusters:
 VlnPlot(LNCaP_ENZ48.seu, features = c("KIF18A", "HIST1H1B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 
 Lastly, we wil get UMAP plots for individual features:
 
@@ -729,7 +795,7 @@ FeaturePlot(LNCaP_ENZ48.seu, features = c("NAALADL2-AS2","PLK1", "KIF18A", "KIF2
                 "AURKA", "CDC20","FAM83D","PIF1","FAM95B1","HIST1H1B","C1QTNF2", "AC114803.1", "TMEM74B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
 
 ### For LNCaP_RESA
 
@@ -748,7 +814,7 @@ LNCaP_RESA_markers %>%
 DoHeatmap(LNCaP_RESA.seu, features = top10$gene) + NoLegend()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-51-1.png)<!-- -->
 
 ``` r
 # Get top 20 DE markers
@@ -768,7 +834,7 @@ DotPlot(LNCaP_RESA.seu, features = LNCaP_RESA.marker, group.by = 'seurat_cluster
         cols = c("blue", "red"), dot.scale = 8) + RotatedAxis()
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
 
 We will now visualize the expression levels of individual markers across
 clusters:
@@ -777,7 +843,7 @@ clusters:
 VlnPlot(LNCaP_RESA.seu, features = c("KIF18A", "HIST1H1B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
 
 Lastly, we wil get UMAP plots for individual features:
 
@@ -786,4 +852,4 @@ FeaturePlot(LNCaP_RESA.seu, features = c("NAALADL2-AS2","PLK1", "KIF18A", "KIF20
                 "AURKA", "CDC20","FAM83D","PIF1","FAM95B1","HIST1H1B","C1QTNF2", "AC114803.1", "TMEM74B"))
 ```
 
-![](scRNA-seq_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
+![](scRNA-seq_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
